@@ -1,0 +1,416 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="card">
+        <h2><i class="fas fa-video"></i> 视频表情识别</h2>
+
+        <div class="upload-area" id="uploadArea">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>拖放视频或点击上传 (MP4格式)</p>
+            <input type="file" id="videoInput" accept="video/mp4">
+        </div>
+
+        <div id="processing" style="display:none;">
+            <div class="progress">
+                <div id="progressBar"></div>
+            </div>
+            <p id="progressText">处理中... 0%</p>
+        </div>
+
+        <div id="resultVideoContainer" style="display:none;">
+            <div class="video-wrapper">
+                <video id="resultVideo" controls>
+                    <source src="" type="video/mp4">
+                    您的浏览器不支持视频播放
+                </video>
+            </div>
+            <div class="video-controls">
+                <button id="retryBtn" class="btn btn-secondary">
+                    <i class="fas fa-sync-alt"></i> 重新加载
+                </button>
+                <button id="downloadBtn" class="btn btn-primary">
+                    <i class="fas fa-download"></i> 下载视频
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .upload-area {
+            border: 2px dashed #ccc;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #4285f4;
+            background: #f8f9fa;
+        }
+        .upload-area i {
+            font-size: 48px;
+            color: #4285f4;
+            margin-bottom: 10px;
+        }
+
+        .video-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            background: #000;
+            position: relative;
+        }
+
+        #resultVideo {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .video-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #4285f4;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #3367d6;
+        }
+
+        .btn-secondary {
+            background: #f1f1f1;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #ddd;
+        }
+
+        .error-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .error-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .error-content h3 {
+            color: #d32f2f;
+            margin-top: 0;
+        }
+
+        .error-content button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .play-prompt {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 10;
+        }
+
+        .play-prompt button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .solution-box {
+            background: #f8f9fa;
+            border-left: 4px solid #4285f4;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .solution-box h4 {
+            margin-top: 0;
+            color: #4285f4;
+        }
+        .solution-box code {
+            background: #e9ecef;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        @media (max-width: 768px) {
+            .video-wrapper {
+                max-width: 100%;
+            }
+        }
+    </style>
+
+    <script>
+        document.getElementById('videoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // 验证文件类型和大小
+            if (!file.type.match('video.*')) {
+                showError('请选择有效的视频文件');
+                return;
+            }
+
+            const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+            if (file.size > MAX_SIZE) {
+                showError('视频文件大小不能超过100MB');
+                return;
+            }
+
+            // 重置状态
+            resetVideoPlayer();
+            document.getElementById('processing').style.display = 'block';
+            updateProgress(0, '准备上传...');
+
+            const formData = new FormData();
+            formData.append('video', file);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/process_video/');
+            xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+
+            xhr.upload.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 50);
+                    updateProgress(percent, `上传中... ${percent}%`);
+                }
+            };
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        if (data.status === 'success') {
+                            updateProgress(100, '处理完成');
+                            loadVideo(data.video_url);
+                        } else {
+                            showDetailedError('处理失败', data.message || '未知错误');
+                        }
+                    } catch (e) {
+                        showDetailedError('响应解析错误', '服务器返回了无效的响应格式');
+                    }
+                } else {
+                    let errorMsg = '服务器错误';
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        errorMsg = data.message || errorMsg;
+                    } catch (e) {
+                        errorMsg = `HTTP ${xhr.status}: ${xhr.statusText}`;
+                    }
+                    showDetailedError('服务器错误', errorMsg);
+                }
+            };
+
+            xhr.onerror = function() {
+                showDetailedError('网络错误', '请求出错，请检查网络连接');
+            };
+
+            xhr.send(formData);
+        });
+
+        // 重新加载按钮
+        document.getElementById('retryBtn').addEventListener('click', function() {
+            const video = document.getElementById('resultVideo');
+            if (video.src) {
+                video.src += '&retry=' + Date.now();
+                video.load();
+            }
+        });
+
+        // 下载按钮
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            const video = document.getElementById('resultVideo');
+            if (video.src) {
+                const a = document.createElement('a');
+                a.href = video.src;
+                a.download = '表情识别结果.mp4';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                alert('没有可下载的视频');
+            }
+        });
+
+        function resetVideoPlayer() {
+            const video = document.getElementById('resultVideo');
+            video.pause();
+            video.src = '';
+            video.load();
+            document.getElementById('resultVideoContainer').style.display = 'none';
+            // 移除所有提示元素
+            const prompts = document.querySelectorAll('.play-prompt, .error-modal');
+            prompts.forEach(p => p.remove());
+        }
+
+        function updateProgress(percent, text) {
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressText').textContent = text;
+        }
+
+        function loadVideo(videoUrl) {
+            const video = document.getElementById('resultVideo');
+            const finalUrl = videoUrl + '?t=' + Date.now();
+
+            // 重置视频元素
+            video.pause();
+            video.src = '';
+            video.load();
+
+            // 设置新的视频源
+            setTimeout(() => {
+                video.src = finalUrl;
+                video.load();
+
+                video.onloadedmetadata = function() {
+                    console.log('视频元数据已加载，时长:', video.duration);
+                    document.getElementById('resultVideoContainer').style.display = 'block';
+
+                    // 尝试自动播放（可能会被浏览器阻止）
+                    video.play().catch(e => {
+                        console.log('自动播放被阻止:', e);
+                        // 显示播放按钮提示
+                        const playPrompt = document.createElement('div');
+                        playPrompt.className = 'play-prompt';
+                        playPrompt.innerHTML = `
+                            <p>视频已加载完成，请点击播放按钮</p>
+                            <button onclick="this.parentNode.remove();video.play()">
+                                <i class="fas fa-play"></i> 播放视频
+                            </button>
+                        `;
+                        video.parentNode.appendChild(playPrompt);
+                    });
+                };
+
+                video.onerror = function() {
+                    console.error('视频加载错误:', video.error);
+                    checkVideoCompatibility(finalUrl);
+                };
+            }, 100);
+        }
+
+        function checkVideoCompatibility(videoUrl) {
+            // 创建测试视频元素检查兼容性
+            const testVideo = document.createElement('video');
+            testVideo.src = videoUrl;
+
+            testVideo.onerror = function() {
+                console.log('浏览器不支持当前视频格式');
+                showDetailedError(
+                    '视频格式不兼容',
+                    '您的浏览器不支持此视频格式，建议：<br>' +
+                    '1. 使用Chrome或Firefox最新版<br>' +
+                    '2. 点击下载按钮保存后观看<br>' +
+                    '3. 尝试上传不同格式的视频'
+                );
+            };
+
+            testVideo.onloadedmetadata = function() {
+                console.log('浏览器支持此视频格式');
+                // 如果测试视频能加载但主视频不能，可能是其他问题
+                showDetailedError(
+                    '视频加载问题',
+                    '视频可以播放但加载失败，请尝试：<br>' +
+                    '1. 点击重新加载按钮<br>' +
+                    '2. 刷新页面后重试<br>' +
+                    '3. 检查网络连接'
+                );
+            };
+
+            // 开始加载测试
+            testVideo.load();
+        }
+
+        function showError(message) {
+            alert(message);
+            document.getElementById('processing').style.display = 'none';
+        }
+
+        function showDetailedError(title, message) {
+            // 特殊处理FFmpeg相关错误
+            if (message.includes('FFmpeg') || message.includes('视频处理失败')) {
+                message += `
+                    <div class="solution-box">
+                        <h4>FFmpeg解决方案：</h4>
+                        <ol>
+                            <li>以管理员身份打开PowerShell</li>
+                            <li>运行: <code>choco upgrade chocolatey</code></li>
+                            <li>运行: <code>choco install ffmpeg -y</code></li>
+                            <li>重启电脑</li>
+                        </ol>
+                        <p>或手动下载 <a href="https://www.gyan.dev/ffmpeg/builds/" target="_blank">FFmpeg</a> 并添加到系统PATH</p>
+                    </div>
+                `;
+            }
+
+            // 创建错误弹窗
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-modal';
+            errorDiv.innerHTML = `
+                <div class="error-content">
+                    <h3>${title}</h3>
+                    <div>${message}</div>
+                    <button id="closeErrorBtn">确定</button>
+                </div>
+            `;
+
+            document.body.appendChild(errorDiv);
+
+            // 添加关闭按钮事件
+            document.getElementById('closeErrorBtn').addEventListener('click', function() {
+                document.body.removeChild(errorDiv);
+            });
+
+            // 隐藏处理进度
+            document.getElementById('processing').style.display = 'none';
+        }
+    </script>
+{% endblock %}

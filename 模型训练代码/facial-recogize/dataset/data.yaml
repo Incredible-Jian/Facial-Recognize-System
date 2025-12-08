@@ -1,0 +1,6 @@
+train: D:\python\PythonProject1\facial-recogize\dataset\train
+val: D:\python\PythonProject1\facial-recogize\dataset\valid
+test: D:\python\PythonProject1\facial-recogize\dataset\test
+weights: [1.0, 3.5, 1.8, 1.5, 0.8, 0.9, 1.3, 3.2, 1.2]
+nc: 9
+names: ['Angry', 'Contempt', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Sleepy', 'Surprised']

@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="card">
+        <h2><i class="fas fa-camera"></i> 实时表情识别</h2>
+
+        <div class="camera-container">
+            <div class="camera-view">
+                <img src="{% url 'video_feed' %}" id="liveCamera" alt="实时摄像头">
+            </div>
+
+            <div class="camera-controls">
+                <button id="captureBtn" class="control-btn">
+                    <i class="fas fa-camera"></i> 拍照保存
+                </button>
+            </div>
+        </div>
+
+        <div class="capture-gallery">
+            <h4>最近拍摄</h4>
+            <div class="gallery-container" id="captureGallery"></div>
+        </div>
+    </div>
+
+    <script>
+        // 拍照功能
+        document.getElementById('captureBtn').addEventListener('click', async function() {
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
+
+            try {
+                const response = await fetch("{% url 'capture' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    // 更新缩略图画廊
+                    const gallery = document.getElementById('captureGallery');
+                    const galleryItem = document.createElement('div');
+                    galleryItem.className = 'gallery-item';
+                    galleryItem.innerHTML = `
+                <img src="${data.image_url}?t=${Date.now()}">
+                <div class="emotion-label">${new Date().toLocaleTimeString()}</div>
+            `;
+                    galleryItem.addEventListener('click', () => {
+                        window.open(data.image_url, '_blank');
+                    });
+
+                    // 只保留最新的5张照片
+                    if (gallery.children.length >= 5) {
+                        gallery.removeChild(gallery.lastChild);
+                    }
+                    gallery.insertBefore(galleryItem, gallery.firstChild);
+                } else {
+                    alert('保存失败: ' + (data.message || '未知错误'));
+                }
+            } catch (error) {
+                alert('请求出错: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-camera"></i> 拍照保存';
+            }
+        });
+
+        // 页面离开时关闭摄像头
+        window.addEventListener('beforeunload', function() {
+            fetch("{% url 'stop_camera' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+        });
+    </script>
+{% endblock %}

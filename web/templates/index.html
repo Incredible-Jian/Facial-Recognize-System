@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人脸表情识别系统</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="container">
+    <header>
+
+        <h1><i class="fas fa-smile"></i> 人脸表情识别系统</h1>
+        <p class="subtitle">基于YOLOv8深度学习模型，实现对人脸表情的精准识别。支持图片、视频和实时摄像头分析。</p>
+        <img src="{% static 'images/logo.png' %}?v=1" alt="Logo" class="logo">
+        <p class="subtitle">Logo</p>
+    </header>
+
+    <div class="feature-cards">
+        <div class="feature-card" onclick="window.location.href='image/'">
+            <div class="card-icon">
+                <i class="fas fa-image"></i>
+            </div>
+            <h3>图片识别</h3>
+            <p>上传单张图片进行表情分析，获取识别结果</p>
+            <div class="action-btn">开始识别</div>
+        </div>
+
+        <div class="feature-card" onclick="window.location.href='video/'">
+            <div class="card-icon">
+                <i class="fas fa-video"></i>
+            </div>
+            <h3>视频识别</h3>
+            <p>上传视频文件，分析视频中人物的表情变化</p>
+            <div class="action-btn">开始识别</div>
+        </div>
+
+        <div class="feature-card" onclick="window.location.href='camera/'">
+            <div class="card-icon">
+                <i class="fas fa-camera"></i>
+            </div>
+            <h3>实时摄像头</h3>
+            <p>使用摄像头实时捕捉并分析表情</p>
+            <div class="action-btn">开始识别</div>
+        </div>
+    </div>
+
+    <div class="emotion-categories">
+        <h2><i class="fas fa-list"></i> 可识别表情</h2>
+        <div class="categories">
+            <div class="category">生气</div>
+            <div class="category">蔑视</div>
+            <div class="category">厌恶</div>
+            <div class="category">恐惧</div>
+            <div class="category">开心</div>
+            <div class="category">中性</div>
+            <div class="category">悲伤</div>
+            <div class="category">困倦</div>
+            <div class="category">惊讶</div>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <h2><i class="fas fa-lightbulb"></i> 系统特点</h2>
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-bolt"></i>
+                <h3>实时分析</h3>
+                <p>毫秒级识别速度，实时处理视频流</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-brain"></i>
+                <h3>深度学习</h3>
+                <p>基于YOLOv8深度学习模型，识别准确率高</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-chart-line"></i>
+                <h3>多场景支持</h3>
+                <p>支持图片、视频和实时摄像头多种输入源</p>
+            </div>
+        </div>
+    </div>
+
+
+    <footer>
+        <p>人脸表情识别系统 &copy; 2025 | 基于Django和YOLOv8</p>
+        <div class="tech-logos">
+            <i class="fab fa-python"></i>
+            <i class="fab fa-django"></i>
+            <i class="fas fa-robot"></i>
+        </div>
+    </footer>
+</div>
+
+<script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

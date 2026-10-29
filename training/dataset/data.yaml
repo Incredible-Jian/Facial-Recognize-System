@@ -1,0 +1,10 @@
+# 路径相对于本文件所在目录，换电脑后无需修改
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 9
+names: ['Angry', 'Contempt', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Sleepy', 'Surprised']
+
+# 类别权重（可选，供自定义加权采样使用；Ultralytics 训练时会忽略该字段）
+# weights: [1.0, 3.5, 1.8, 1.5, 0.8, 0.9, 1.3, 3.2, 1.2]

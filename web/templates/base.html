@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表情识别系统</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<nav>
+    <a href="{% url 'home' %}"><i class="fas fa-home"></i> 首页</a>
+    <a href="{% url 'image' %}"><i class="fas fa-image"></i> 图片识别</a>
+    <a href="{% url 'video' %}"><i class="fas fa-video"></i> 视频识别</a>
+    <a href="{% url 'camera' %}"><i class="fas fa-camera"></i> 实时识别</a>
+</nav>
+
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+
+<footer>
+    <p>表情识别系统 &copy; 2025</p>
+</footer>
+</body>
+</html>

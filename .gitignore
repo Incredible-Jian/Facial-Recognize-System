@@ -1,0 +1,57 @@
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# 虚拟环境
+.venv/
+venv/
+env/
+ENV/
+
+# ---------- Django ----------
+web/db.sqlite3
+web/staticfiles/
+# 上传文件与识别结果不入库，但保留目录结构
+web/media/*
+!web/media/.gitkeep
+
+# ---------- IDE / 编辑器 ----------
+.idea/
+.vscode/
+*.iml
+*.swp
+
+# ---------- 操作系统 ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- 训练产物 ----------
+training/runs/
+training/**/runs/
+training/**/*.pth
+training/**/*.pt
+training/**/classification_report.txt
+training/**/confusion_matrix.png
+training/**/class_metrics.png
+training/**/class_accuracy.png
+training/**/roc_curve.png
+training/**/sample_predictions.png
+*.log
+
+# ---------- 大模型权重 ----------
+# best.pt 随仓库提供；其余大权重通过 GitHub Releases 分发
+weights/*.pth
+weights/*.onnx
+
+# ---------- 脚本临时输出 ----------
+output.jpg
+output.mp4
+
+# ---------- 本地环境变量 ----------
+.env

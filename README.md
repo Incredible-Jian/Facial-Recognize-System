@@ -102,6 +102,8 @@ python manage.py runserver
 
 > `web/db.sqlite3` 不纳入版本控制，首次运行执行 `migrate` 即可自动生成。
 
+生产部署时请设置环境变量 `DJANGO_SECRET_KEY`（固定密钥）、`DJANGO_DEBUG=0` 和 `DJANGO_ALLOWED_HOSTS`。未设置 `DJANGO_SECRET_KEY` 时开发模式会自动生成随机密钥，重启后管理员登录状态会失效。
+
 ### 4. 模型权重
 
 | 权重 | 大小 | 用途 | 获取方式 |

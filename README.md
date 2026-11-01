@@ -1,5 +1,7 @@
 # 人脸表情识别系统
 
+[简体中文](README.md) | [English](README.en.md)
+
 基于 **Django + YOLOv8** 的九种人脸表情识别系统，支持图片上传识别、视频逐帧分析和实时摄像头检测。
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
@@ -15,7 +17,7 @@
 | --- | --- |
 | 图片识别 | 上传 JPG/PNG 图片，返回带表情类别与置信度标注的结果图 |
 | 视频识别 | 上传 MP4 视频，逐帧检测并合成标注视频（需要 FFmpeg） |
-| 实时摄像头 | 浏览器调用摄像头，MJPEG 实时推流，支持抓拍保存 |
+| 实时摄像头 | Django 服务读取本机摄像头，浏览器展示 MJPEG 视频流，支持抓拍保存 |
 | 九种表情 | Angry / Contempt / Disgust / Fear / Happy / Neutral / Sad / Sleepy / Surprised |
 | Web 界面 | Django Templates + 原生 JavaScript，无需额外前端构建 |
 
@@ -72,7 +74,7 @@ Facial-Recognize-System/
 
 - Python **3.10+**（已在 3.12 上测试）
 - 视频识别需要安装 **FFmpeg**，并确保 `ffmpeg` 在 PATH 中
-- 实时识别需要浏览器允许摄像头权限
+- 摄像头推流使用 Django 服务所在电脑的摄像头，当前实现采用 Windows `CAP_DSHOW` 后端；浏览器页面还会请求摄像头权限
 
 ### 2. 安装依赖
 
@@ -186,7 +188,7 @@ python training/classifiers/vgg/eval.py
 
 ## 实验指标
 
-以下数据来自项目文档，实际结果请以本地评估为准：
+以下数据来自项目文档，本轮整理未独立复现；不代表随库权重在所有硬件上的实测表现，实际结果请以本地评估为准：
 
 | 指标 | 报告值 |
 | --- | --- |
@@ -211,6 +213,8 @@ python training/classifiers/vgg/eval.py
 
 **Q：摄像头页面一直加载？**
 确认浏览器已允许摄像头权限，并关闭其他占用摄像头的程序（微信、腾讯会议等）。Windows 下代码使用 `cv2.CAP_DSHOW` 后端。
+
+MJPEG 流来自运行 Django 的电脑，远程访问不会自动使用访问者电脑的摄像头。其他操作系统需要调整 OpenCV 摄像头后端。
 
 **Q：提示找不到 `weights/best.pt`？**
 确认从仓库根目录克隆完整代码，`weights/best.pt` 应随仓库提供；也可以通过环境变量 `YOLO_MODEL_PATH` 指定其他权重路径。

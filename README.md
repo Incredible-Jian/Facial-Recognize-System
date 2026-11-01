@@ -104,6 +104,10 @@ python manage.py runserver
 
 生产部署时请设置环境变量 `DJANGO_SECRET_KEY`（固定密钥）、`DJANGO_DEBUG=0` 和 `DJANGO_ALLOWED_HOSTS`。未设置 `DJANGO_SECRET_KEY` 时开发模式会自动生成随机密钥，重启后管理员登录状态会失效。
 
+环境变量示例见 [.env.example](.env.example)。Django 不会自动加载该文件，需要在启动进程的终端设置，例如 PowerShell 中使用 `$env:DJANGO_DEBUG = "1"`。
+
+当 `DJANGO_DEBUG=0` 且未设置有效的 `DJANGO_SECRET_KEY` 时，应用会拒绝启动，避免部署时使用临时密钥。
+
 ### 4. 模型权重
 
 | 权重 | 大小 | 用途 | 获取方式 |
